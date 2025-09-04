@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Hotel Booking App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1>Admin Dashboard</h1>
+        <p class="lead">Welcome, {{ user.name }}! Manage your hotel operations from here.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.rooms.total }}</h4>
+                        <p class="mb-0">Total Rooms</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-bed fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <small>{{ stats.rooms.available }} Available</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.bookings.confirmed + stats.bookings.completed }}</h4>
+                        <p class="mb-0">Active Bookings</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-calendar-check fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <small>{{ stats.bookings.pending }} Pending</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.bookings.total }}</h4>
+                        <p class="mb-0">Total Bookings</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-calendar fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <small>{{ stats.bookings.cancelled }} Cancelled</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>${{ "%.2f"|format(stats.bookings.revenue) }}</h4>
+                        <p class="mb-0">Revenue</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-dollar-sign fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <small>Phase 3 Complete</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Management Tools</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
+                                <h6>Manage Rooms</h6>
+                                <p class="small">Add, edit, and delete hotel rooms</p>
+                                <a href="{{ url_for('room.manage_rooms') }}" class="btn btn-primary">Manage Rooms</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-list-alt fa-3x text-success mb-3"></i>
+                                <h6>Manage Bookings</h6>
+                                <p class="small">View and manage customer bookings</p>
+                                <a href="{{ url_for('booking.admin_bookings') }}" class="btn btn-success">Manage Bookings</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">System Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>User Authentication</span>
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Database Connection</span>
+                        <span class="badge bg-success">Connected</span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Room Management</span>
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Booking System</span>
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

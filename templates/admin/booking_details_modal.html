@@ -1,0 +1,85 @@
+<div class="row">
+    <div class="col-md-6">
+        <h6 class="text-primary">Booking Information</h6>
+        <table class="table table-sm">
+            <tr>
+                <td><strong>Booking ID:</strong></td>
+                <td>{{ booking._id }}</td>
+            </tr>
+            <tr>
+                <td><strong>Status:</strong></td>
+                <td>
+                    <span class="badge bg-{% if booking.status == 'confirmed' %}success{% elif booking.status == 'pending' %}warning{% elif booking.status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+                        {{ booking.status.title() }}
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Check-in:</strong></td>
+                <td>{{ booking.check_in.strftime('%B %d, %Y') if booking.check_in else 'N/A' }}</td>
+            </tr>
+            <tr>
+                <td><strong>Check-out:</strong></td>
+                <td>{{ booking.check_out.strftime('%B %d, %Y') if booking.check_out else 'N/A' }}</td>
+            </tr>
+            <tr>
+                <td><strong>Nights:</strong></td>
+                <td>{{ booking.nights }} nights</td>
+            </tr>
+            <tr>
+                <td><strong>Total Price:</strong></td>
+                <td><strong>${{ "%.2f"|format(booking.total_price) }}</strong></td>
+            </tr>
+            <tr>
+                <td><strong>Created:</strong></td>
+                <td>{{ booking.created_at.strftime('%B %d, %Y at %I:%M %p') if booking.created_at else 'N/A' }}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="col-md-6">
+        <h6 class="text-primary">Guest Information</h6>
+        <table class="table table-sm">
+            <tr>
+                <td><strong>Name:</strong></td>
+                <td>{{ booking.user.name if booking.user else 'N/A' }}</td>
+            </tr>
+            <tr>
+                <td><strong>Email:</strong></td>
+                <td>{{ booking.user.email if booking.user else 'N/A' }}</td>
+            </tr>
+            <tr>
+                <td><strong>Phone:</strong></td>
+                <td>{{ booking.user.phone if booking.user else 'N/A' }}</td>
+            </tr>
+        </table>
+
+        <h6 class="text-primary mt-3">Room Information</h6>
+        <table class="table table-sm">
+            <tr>
+                <td><strong>Room:</strong></td>
+                <td>{{ booking.room.name if booking.room else 'N/A' }}</td>
+            </tr>
+            <tr>
+                <td><strong>Type:</strong></td>
+                <td>{{ booking.room.type if booking.room else 'N/A' }}</td>
+            </tr>
+            <tr>
+                <td><strong>Price per night:</strong></td>
+                <td>${{ "%.2f"|format(booking.room.price) if booking.room else 'N/A' }}</td>
+            </tr>
+            <tr>
+                <td><strong>Capacity:</strong></td>
+                <td>{{ booking.room.capacity }} guests</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+{% if booking.special_requests %}
+<div class="row mt-3">
+    <div class="col-12">
+        <h6 class="text-primary">Special Requests</h6>
+        <p class="text-muted">{{ booking.special_requests }}</p>
+    </div>
+</div>
+{% endif %}

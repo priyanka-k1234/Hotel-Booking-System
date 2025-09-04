@@ -1,0 +1,442 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Hotel Information - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-hotel"></i> Manage Hotel Information</h2>
+                <a href="{{ url_for('location.hotel_info') }}" target="_blank" class="btn btn-outline-info">
+                    <i class="fas fa-external-link-alt"></i> Preview Public Page
+                </a>
+            </div>
+
+            <div class="row">
+                <!-- Basic Information -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-info-circle"></i> Basic Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="basicInfoForm">
+                                <div class="mb-3">
+                                    <label for="hotelName" class="form-label">Hotel Name</label>
+                                    <input type="text" class="form-control" id="hotelName" name="name" 
+                                           value="{{ hotel_info.name }}" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="hotelAddress" class="form-label">Address</label>
+                                    <textarea class="form-control" id="hotelAddress" name="address" 
+                                              rows="2" required>{{ hotel_info.address }}</textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="hotelDescription" class="form-label">Description</label>
+                                    <textarea class="form-control" id="hotelDescription" name="description" 
+                                              rows="4" required>{{ hotel_info.description }}</textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Basic Info
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-phone"></i> Contact Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="contactForm">
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" 
+                                           value="{{ hotel_info.contact.phone }}" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="{{ hotel_info.contact.email }}" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="website" class="form-label">Website</label>
+                                    <input type="url" class="form-control" id="website" name="website" 
+                                           value="{{ hotel_info.contact.website }}">
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Contact Info
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location & Coordinates -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-map-marker-alt"></i> Location Coordinates</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="coordinatesForm">
+                                <div class="mb-3">
+                                    <label for="latitude" class="form-label">Latitude</label>
+                                    <input type="number" step="any" class="form-control" id="latitude" name="latitude" 
+                                           value="{{ hotel_info.coordinates.latitude }}" required>
+                                    <div class="form-text">Use decimal degrees (e.g., 40.7831)</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="longitude" class="form-label">Longitude</label>
+                                    <input type="number" step="any" class="form-control" id="longitude" name="longitude" 
+                                           value="{{ hotel_info.coordinates.longitude }}" required>
+                                    <div class="form-text">Use decimal degrees (e.g., -73.9712)</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <a href="https://www.google.com/maps" target="_blank" class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-external-link-alt"></i> Find Coordinates on Google Maps
+                                    </a>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Coordinates
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Policies -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-file-alt"></i> Hotel Policies</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="policiesForm">
+                                <div class="mb-3">
+                                    <label for="cancellation" class="form-label">Cancellation Policy</label>
+                                    <input type="text" class="form-control" id="cancellation" name="cancellation" 
+                                           value="{{ hotel_info.policies.cancellation }}" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="pets" class="form-label">Pet Policy</label>
+                                    <input type="text" class="form-control" id="pets" name="pets" 
+                                           value="{{ hotel_info.policies.pets }}" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="smoking" class="form-label">Smoking Policy</label>
+                                    <input type="text" class="form-control" id="smoking" name="smoking" 
+                                           value="{{ hotel_info.policies.smoking }}" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="children" class="form-label">Children Policy</label>
+                                    <input type="text" class="form-control" id="children" name="children" 
+                                           value="{{ hotel_info.policies.children }}" required>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Policies
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Amenities Management -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-star"></i> Hotel Amenities</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="amenitiesForm">
+                                <div class="mb-3">
+                                    <label for="amenitiesInput" class="form-label">Add New Amenity</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="amenitiesInput" 
+                                               placeholder="Enter amenity name">
+                                        <button type="button" class="btn btn-outline-primary" onclick="addAmenity()">
+                                            <i class="fas fa-plus"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Current Amenities</label>
+                                    <div id="amenitiesList" class="border rounded p-3 min-height-100">
+                                        {% for amenity in hotel_info.amenities %}
+                                        <span class="badge bg-light text-dark me-2 mb-2 amenity-badge">
+                                            {{ amenity }}
+                                            <button type="button" class="btn-close btn-close-sm ms-1" 
+                                                    onclick="removeAmenity(this)" aria-label="Remove"></button>
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Amenities
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <a href="{{ url_for('location.hotel_info') }}" target="_blank" 
+                                       class="btn btn-outline-info w-100">
+                                        <i class="fas fa-eye"></i> Preview Public Page
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{{ url_for('location.contact') }}" target="_blank" 
+                                       class="btn btn-outline-success w-100">
+                                        <i class="fas fa-envelope"></i> Preview Contact Page
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-outline-warning w-100" onclick="exportHotelInfo()">
+                                        <i class="fas fa-download"></i> Export Info
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{{ url_for('main.admin_dashboard') }}" 
+                                       class="btn btn-outline-secondary w-100">
+                                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.min-height-100 {
+    min-height: 100px;
+}
+
+.amenity-badge {
+    border: 1px solid #dee2e6 !important;
+}
+
+.btn-close-sm {
+    font-size: 0.6rem;
+}
+</style>
+
+<script>
+// Form handlers
+document.getElementById('basicInfoForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    updateHotelInfo(data, 'Basic information');
+});
+
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const contactData = {
+        contact: {
+            phone: formData.get('phone'),
+            email: formData.get('email'),
+            website: formData.get('website')
+        }
+    };
+    updateHotelInfo(contactData, 'Contact information');
+});
+
+document.getElementById('coordinatesForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const coordinatesData = {
+        coordinates: {
+            latitude: parseFloat(formData.get('latitude')),
+            longitude: parseFloat(formData.get('longitude'))
+        }
+    };
+    updateHotelInfo(coordinatesData, 'Location coordinates');
+});
+
+document.getElementById('policiesForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const policiesData = {
+        policies: {
+            cancellation: formData.get('cancellation'),
+            pets: formData.get('pets'),
+            smoking: formData.get('smoking'),
+            children: formData.get('children')
+        }
+    };
+    updateHotelInfo(policiesData, 'Hotel policies');
+});
+
+document.getElementById('amenitiesForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const amenities = [];
+    document.querySelectorAll('#amenitiesList .amenity-badge').forEach(badge => {
+        const text = badge.textContent.trim();
+        if (text) {
+            amenities.push(text);
+        }
+    });
+    
+    const amenitiesData = { amenities: amenities };
+    updateHotelInfo(amenitiesData, 'Hotel amenities');
+});
+
+// Amenities management
+function addAmenity() {
+    const input = document.getElementById('amenitiesInput');
+    const amenity = input.value.trim();
+    
+    if (!amenity) {
+        alert('Please enter an amenity name');
+        return;
+    }
+    
+    // Check if amenity already exists
+    const existing = Array.from(document.querySelectorAll('#amenitiesList .amenity-badge'))
+        .some(badge => badge.textContent.trim() === amenity);
+    
+    if (existing) {
+        alert('This amenity already exists');
+        return;
+    }
+    
+    // Add amenity badge
+    const amenitiesList = document.getElementById('amenitiesList');
+    const badge = document.createElement('span');
+    badge.className = 'badge bg-light text-dark me-2 mb-2 amenity-badge';
+    badge.innerHTML = `
+        ${amenity}
+        <button type="button" class="btn-close btn-close-sm ms-1" 
+                onclick="removeAmenity(this)" aria-label="Remove"></button>
+    `;
+    
+    amenitiesList.appendChild(badge);
+    input.value = '';
+}
+
+function removeAmenity(button) {
+    button.parentElement.remove();
+}
+
+// Handle Enter key in amenities input
+document.getElementById('amenitiesInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        addAmenity();
+    }
+});
+
+// Update hotel information
+function updateHotelInfo(data, description) {
+    const buttons = document.querySelectorAll('button[type="submit"]');
+    buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    });
+    
+    fetch('/location/admin/hotel-info/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`${description} updated successfully!`);
+        } else {
+            alert(`Error updating ${description.toLowerCase()}: ${data.message}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert(`Error updating ${description.toLowerCase()}. Please try again.`);
+    })
+    .finally(() => {
+        // Reset all buttons
+        buttons.forEach(btn => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Save ' + btn.closest('form').id.replace('Form', '').replace(/([A-Z])/g, ' $1');
+        });
+        
+        // Specific button text fixes
+        document.querySelector('#basicInfoForm button').innerHTML = '<i class="fas fa-save"></i> Save Basic Info';
+        document.querySelector('#contactForm button').innerHTML = '<i class="fas fa-save"></i> Save Contact Info';
+        document.querySelector('#coordinatesForm button').innerHTML = '<i class="fas fa-save"></i> Save Coordinates';
+        document.querySelector('#policiesForm button').innerHTML = '<i class="fas fa-save"></i> Save Policies';
+        document.querySelector('#amenitiesForm button').innerHTML = '<i class="fas fa-save"></i> Save Amenities';
+    });
+}
+
+// Export hotel information
+function exportHotelInfo() {
+    const hotelData = {
+        name: document.getElementById('hotelName').value,
+        address: document.getElementById('hotelAddress').value,
+        description: document.getElementById('hotelDescription').value,
+        contact: {
+            phone: document.getElementById('phone').value,
+            email: document.getElementById('email').value,
+            website: document.getElementById('website').value
+        },
+        coordinates: {
+            latitude: document.getElementById('latitude').value,
+            longitude: document.getElementById('longitude').value
+        },
+        policies: {
+            cancellation: document.getElementById('cancellation').value,
+            pets: document.getElementById('pets').value,
+            smoking: document.getElementById('smoking').value,
+            children: document.getElementById('children').value
+        },
+        amenities: Array.from(document.querySelectorAll('#amenitiesList .amenity-badge'))
+            .map(badge => badge.textContent.trim())
+    };
+    
+    const dataStr = JSON.stringify(hotelData, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'hotel_information.json';
+    link.click();
+    
+    URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

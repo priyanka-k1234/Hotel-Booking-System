@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Bookings - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-calendar-alt"></i> Manage Bookings</h2>
+                <div class="btn-group">
+                    <button class="btn btn-outline-success" onclick="refreshBookings()">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center border-primary">
+                        <div class="card-body">
+                            <h4 class="text-primary">{{ stats.total }}</h4>
+                            <p class="card-text">Total Bookings</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center border-warning">
+                        <div class="card-body">
+                            <h4 class="text-warning">{{ stats.confirmed }}</h4>
+                            <p class="card-text">Confirmed</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center border-success">
+                        <div class="card-body">
+                            <h4 class="text-success">{{ stats.completed }}</h4>
+                            <p class="card-text">Completed</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center border-danger">
+                        <div class="card-body">
+                            <h4 class="text-danger">{{ stats.cancelled }}</h4>
+                            <p class="card-text">Cancelled</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-filter"></i> Filter Bookings</h6>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-2">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">All Statuses</option>
+                                <option value="confirmed" {{ 'selected' if request.args.get('status') == 'confirmed' }}>Confirmed</option>
+                                <option value="completed" {{ 'selected' if request.args.get('status') == 'completed' }}>Completed</option>
+                                <option value="cancelled" {{ 'selected' if request.args.get('status') == 'cancelled' }}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="room_number" class="form-label">Room</label>
+                            <input type="text" class="form-control" id="room_number" name="room_number" 
+                                   placeholder="Room number" value="{{ request.args.get('room_number', '') }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="guest_name" class="form-label">Guest Name</label>
+                            <input type="text" class="form-control" id="guest_name" name="guest_name" 
+                                   placeholder="Guest name" value="{{ request.args.get('guest_name', '') }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="date_from" class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="date_from" name="date_from" 
+                                   value="{{ request.args.get('date_from', '') }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="date_to" class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="date_to" name="date_to" 
+                                   value="{{ request.args.get('date_to', '') }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Filter
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Bookings Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Bookings List ({{ bookings|length }} results)</h6>
+                </div>
+                <div class="card-body p-0">
+                    {% if bookings %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Booking #</th>
+                                    <th>Guest</th>
+                                    <th>Room</th>
+                                    <th>Check-in</th>
+                                    <th>Check-out</th>
+                                    <th>Nights</th>
+                                    <th>Guests</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Booked On</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in bookings %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ booking._id }}</strong>
+                                    </td>
+                                    <td>
+                                        <div>{{ booking.user.name }}</div>
+                                        <small class="text-muted">{{ booking.user.email }}</small>
+                                    </td>
+                                    <td>
+                                        <div><strong>{{ booking.room.name }}</strong></div>
+                                        <small class="text-muted">{{ booking.room.description[:30] }}{% if booking.room.description|length > 30 %}...{% endif %}</small>
+                                    </td>
+                                    <td>{{ booking.check_in.strftime('%m/%d/%Y') }}</td>
+                                    <td>{{ booking.check_out.strftime('%m/%d/%Y') }}</td>
+                                    <td>{{ booking.nights }}</td>
+                                    <td>{{ booking.guests }}</td>
+                                    <td class="text-end">
+                                        <strong>${{ "%.2f"|format(booking.total_price) }}</strong>
+                                    </td>
+                                    <td>
+                                        {% if booking.status == 'confirmed' %}
+                                            <span class="badge bg-warning">{{ booking.status.title() }}</span>
+                                        {% elif booking.status == 'completed' %}
+                                            <span class="badge bg-success">{{ booking.status.title() }}</span>
+                                        {% elif booking.status == 'cancelled' %}
+                                            <span class="badge bg-danger">{{ booking.status.title() }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ booking.status.title() }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div>{{ booking.created_at.strftime('%m/%d/%Y') }}</div>
+                                        <small class="text-muted">{{ booking.created_at.strftime('%I:%M %p') }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button class="btn btn-outline-info" 
+                                                    onclick="viewBookingDetails('{{ booking._id }}')" 
+                                                    title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            {% if booking.status == 'confirmed' %}
+                                            <button class="btn btn-outline-success" 
+                                                    onclick="markCompleted('{{ booking._id }}')" 
+                                                    title="Mark as Completed">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger" 
+                                                    onclick="cancelBooking('{{ booking._id }}', '{{ booking._id }}')" 
+                                                    title="Cancel Booking">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                            {% endif %}
+                                            <button class="btn btn-outline-danger" 
+                                                    onclick="deleteBooking('{{ booking._id }}')" 
+                                                    title="Delete Booking">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No bookings found</h5>
+                        <p class="text-muted">No bookings match your current filters.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if bookings|length >= 20 %}
+            <nav aria-label="Bookings pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item">
+                        <a class="page-link" href="#" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Booking Details Modal -->
+<div class="modal fade" id="bookingDetailsModal" tabindex="-1" aria-labelledby="bookingDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingDetailsModalLabel">Booking Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="bookingDetailsContent">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewBookingDetails(bookingId) {
+    const modal = new bootstrap.Modal(document.getElementById('bookingDetailsModal'));
+    const contentDiv = document.getElementById('bookingDetailsContent');
+    
+    // Show loading spinner
+    contentDiv.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    `;
+    
+    modal.show();
+    
+    // Fetch booking details
+    fetch(`/booking/admin/booking/details/${bookingId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                contentDiv.innerHTML = data.html;
+            } else {
+                contentDiv.innerHTML = '<div class="alert alert-danger">Error loading booking details</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            contentDiv.innerHTML = '<div class="alert alert-danger">Error loading booking details</div>';
+        });
+}
+
+function markCompleted(bookingId) {
+    if (confirm('Mark this booking as completed?')) {
+        fetch(`/admin/booking/complete/${bookingId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Booking marked as completed');
+                location.reload();
+            } else {
+                alert('Error updating booking: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating booking. Please try again.');
+        });
+    }
+}
+
+function cancelBooking(bookingId, bookingNumber) {
+    if (confirm(`Cancel booking #${bookingNumber}? This action cannot be undone.`)) {
+        fetch(`/admin/booking/cancel/${bookingId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Booking cancelled successfully');
+                location.reload();
+            } else {
+                alert('Error cancelling booking: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error cancelling booking. Please try again.');
+        });
+    }
+}
+
+function deleteBooking(bookingId) {
+    if (confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
+        fetch(`/booking/admin/booking/delete/${bookingId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Booking deleted successfully');
+                location.reload();
+            } else {
+                alert('Error deleting booking: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting booking. Please try again.');
+        });
+    }
+}
+
+function refreshBookings() {
+    location.reload();
+}
+</script>
+{% endblock %}
