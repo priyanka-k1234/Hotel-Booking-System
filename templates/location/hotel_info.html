@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+
+{% block title %}Hotel Information & Location{% endblock %}
+
+{% block head %}
+<style>
+    .place-card {
+        transition: transform 0.2s;
+        cursor: pointer;
+    }
+    
+    .place-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .rating {
+        color: #ffc107;
+    }
+    
+    .amenity-badge {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        color: #495057;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Hotel Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="text-center">
+                <h1 class="display-4">{{ hotel_info.name }}</h1>
+                <p class="lead text-muted">{{ hotel_info.description }}</p>
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <p class="h5">
+                            <i class="fas fa-map-marker-alt text-primary"></i> 
+                            {{ hotel_info.address }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Hotel Information -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Hotel Information</h5>
+                </div>
+                <div class="card-body">
+                    <h6><i class="fas fa-phone"></i> Contact</h6>
+                    <p class="mb-1">Phone: {{ hotel_info.contact.phone }}</p>
+                    <p class="mb-1">Email: {{ hotel_info.contact.email }}</p>
+                    <p class="mb-3">Website: {{ hotel_info.contact.website }}</p>
+                    
+                    <h6><i class="fas fa-clock"></i> Check-in / Check-out</h6>
+                    <p class="mb-1">Check-in: {{ hotel_info.check_in_time }}</p>
+                    <p class="mb-3">Check-out: {{ hotel_info.check_out_time }}</p>
+                    
+                    <div class="text-center">
+                        <a href="{{ url_for('location.directions') }}" target="_blank" 
+                           class="btn btn-primary btn-sm me-2">
+                            <i class="fas fa-directions"></i> Get Directions
+                        </a>
+                        <a href="{{ url_for('location.contact') }}" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-envelope"></i> Contact Us
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hotel Amenities -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-star"></i> Hotel Amenities</h6>
+                </div>
+                <div class="card-body">
+                    {% for amenity in hotel_info.amenities %}
+                        <span class="badge amenity-badge me-1 mb-1">{{ amenity }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Policies -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-file-alt"></i> Hotel Policies</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Cancellation:</strong> {{ hotel_info.policies.cancellation }}</p>
+                    <p><strong>Pets:</strong> {{ hotel_info.policies.pets }}</p>
+                    <p><strong>Smoking:</strong> {{ hotel_info.policies.smoking }}</p>
+                    <p class="mb-0"><strong>Children:</strong> {{ hotel_info.policies.children }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map and Nearby Places -->
+        <div class="col-md-8">
+            <!-- Location Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-map-marker-alt"></i> Hotel Location</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h4>{{ hotel_info.name }}</h4>
+                        <p class="lead">{{ hotel_info.address }}</p>
+                        <a href="https://maps.google.com/maps?q={{ hotel_info.address }}" target="_blank" 
+                           class="btn btn-primary btn-lg">
+                            <i class="fas fa-map-marked-alt"></i> View on Google Maps
+                        </a>
+                        <a href="https://maps.google.com/maps/dir/Current+Location/{{ hotel_info.address.replace(' ', '+') }}" 
+                           target="_blank" class="btn btn-outline-primary btn-lg ms-2">
+                            <i class="fas fa-directions"></i> Get Directions
+                        </a>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <i class="fas fa-subway fa-2x text-primary mb-2"></i>
+                            <p><strong>Times Square</strong><br>2 min walk</p>
+                        </div>
+                        <div class="col-4">
+                            <i class="fas fa-theater-masks fa-2x text-success mb-2"></i>
+                            <p><strong>Broadway</strong><br>5 min walk</p>
+                        </div>
+                        <div class="col-4">
+                            <i class="fas fa-shopping-bag fa-2x text-warning mb-2"></i>
+                            <p><strong>Shopping</strong><br>3 min walk</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nearby Places Tabs -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <ul class="nav nav-tabs card-header-tabs" id="nearbyTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="attractions-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#attractions" type="button" role="tab" aria-controls="attractions" aria-selected="true">
+                                <i class="fas fa-camera"></i> Attractions
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="restaurants-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#restaurants" type="button" role="tab" aria-controls="restaurants" aria-selected="false">
+                                <i class="fas fa-utensils"></i> Dining
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="shopping-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#shopping" type="button" role="tab" aria-controls="shopping" aria-selected="false">
+                                <i class="fas fa-shopping-bag"></i> Shopping
+                            </button>
+                        </li>
+                    </ul>
+                    <button class="btn btn-outline-primary btn-sm" onclick="refreshNearbyPlaces()" title="Refresh with live data">
+                        <i class="fas fa-sync-alt"></i> Live Data
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="nearbyTabsContent">
+                        <!-- Attractions Tab -->
+                        <div class="tab-pane fade show active" id="attractions" role="tabpanel" aria-labelledby="attractions-tab">
+                            <div class="row">
+                                {% for place in attractions %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card place-card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ place.name }}</h6>
+                                            <p class="card-text small text-muted">{{ place.address }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-map-marker-alt"></i> {{ place.distance }}
+                                                </small>
+                                                <div class="rating">
+                                                    <i class="fas fa-star"></i> {{ place.rating }}
+                                                </div>
+                                            </div>
+                                            <div class="mt-2">
+                                                <a href="https://maps.google.com/maps?q={{ place.name.replace(' ', '+') }}+{{ place.address.replace(' ', '+') }}" 
+                                                   target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-external-link-alt"></i> View
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Restaurants Tab -->
+                        <div class="tab-pane fade" id="restaurants" role="tabpanel" aria-labelledby="restaurants-tab">
+                            <div class="row">
+                                {% for place in restaurants %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card place-card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ place.name }}</h6>
+                                            <p class="card-text small text-muted">{{ place.address }}</p>
+                                            <p class="card-text small"><span class="badge bg-info">{{ place.type }}</span></p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-map-marker-alt"></i> {{ place.distance }}
+                                                </small>
+                                                <div class="rating">
+                                                    <i class="fas fa-star"></i> {{ place.rating }}
+                                                </div>
+                                            </div>
+                                            <div class="mt-2">
+                                                <a href="https://maps.google.com/maps?q={{ place.name.replace(' ', '+') }}+{{ place.address.replace(' ', '+') }}" 
+                                                   target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-external-link-alt"></i> View
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Shopping Tab -->
+                        <div class="tab-pane fade" id="shopping" role="tabpanel" aria-labelledby="shopping-tab">
+                            <div class="row">
+                                {% for place in shopping %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card place-card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ place.name }}</h6>
+                                            <p class="card-text small text-muted">{{ place.address }}</p>
+                                            <p class="card-text small"><span class="badge bg-success">{{ place.type }}</span></p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-map-marker-alt"></i> {{ place.distance }}
+                                                </small>
+                                                <div class="rating">
+                                                    <i class="fas fa-star"></i> {{ place.rating }}
+                                                </div>
+                                            </div>
+                                            <div class="mt-2">
+                                                <a href="https://maps.google.com/maps?q={{ place.name.replace(' ', '+') }}+{{ place.address.replace(' ', '+') }}" 
+                                                   target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-external-link-alt"></i> View
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('room.browse_rooms') }}" class="btn btn-primary btn-lg me-3">
+                <i class="fas fa-bed"></i> View Our Rooms
+            </a>
+            <a href="{{ url_for('location.contact') }}" class="btn btn-outline-info btn-lg">
+                <i class="fas fa-phone"></i> Contact Us
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Refresh nearby places with live Google data
+function refreshNearbyPlaces() {
+    const button = document.querySelector('button[onclick="refreshNearbyPlaces()"]');
+    const originalText = button.innerHTML;
+    
+    // Show loading state
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+    button.disabled = true;
+    
+    // Get current active tab
+    const activeTab = document.querySelector('#nearbyTabs .nav-link.active');
+    const placeType = activeTab.id.replace('-tab', '').replace('s', ''); // attractions -> attraction
+    const googlePlaceType = placeType === 'attraction' ? 'tourist_attraction' : placeType;
+    
+    // Fetch live data
+    fetch(`/location/api/nearby-places?type=${googlePlaceType}&radius=1000`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.places.length > 0) {
+                updatePlacesDisplay(data.places, placeType + 's');
+                showToast('Live data loaded successfully!', 'success');
+            } else {
+                showToast('No places found or API limit reached', 'warning');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading live data:', error);
+            showToast('Error loading live data', 'error');
+        })
+        .finally(() => {
+            // Restore button
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+}
+
+// Update places display with new data
+function updatePlacesDisplay(places, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const placesGrid = container.querySelector('.row');
+    if (!placesGrid) return;
+    
+    placesGrid.innerHTML = '';
+    
+    places.forEach(place => {
+        const placeCard = `
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card place-card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">${place.name}</h6>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <i class="fas fa-map-marker-alt"></i> ${place.distance}
+                                <br>
+                                <i class="fas fa-star text-warning"></i> ${place.rating}/5
+                                ${place.user_ratings_total ? `(${place.user_ratings_total} reviews)` : ''}
+                            </small>
+                        </p>
+                        <p class="card-text">${place.address}</p>
+                        <div class="mt-2">
+                            <a href="https://maps.google.com/maps?q=${place.name.replace(/\s+/g, '+')}+${place.address.replace(/\s+/g, '+')}" 
+                               target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-external-link-alt"></i> View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        placesGrid.innerHTML += placeCard;
+    });
+}
+
+// Simple toast notification
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'exclamation-triangle' : 'info'}"></i>
+        ${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    document.body.appendChild(toast);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

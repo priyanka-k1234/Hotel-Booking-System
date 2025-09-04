@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Us - {{ hotel_info.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mb-5">
+                <h1 class="display-4">Contact Us</h1>
+                <p class="lead text-muted">We're here to help make your stay exceptional</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Contact Information -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Hotel Information</h5>
+                </div>
+                <div class="card-body">
+                    <h4>{{ hotel_info.name }}</h4>
+                    <p class="text-muted mb-4">{{ hotel_info.description }}</p>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <h6><i class="fas fa-map-marker-alt text-primary"></i> Address</h6>
+                            <p>{{ hotel_info.address }}</p>
+                            <a href="{{ url_for('location.directions') }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-directions"></i> Get Directions
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6><i class="fas fa-phone text-success"></i> Phone</h6>
+                            <p><a href="tel:{{ hotel_info.contact.phone }}" class="text-decoration-none">{{ hotel_info.contact.phone }}</a></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6><i class="fas fa-envelope text-info"></i> Email</h6>
+                            <p><a href="mailto:{{ hotel_info.contact.email }}" class="text-decoration-none">{{ hotel_info.contact.email }}</a></p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6><i class="fas fa-clock text-warning"></i> Check-in</h6>
+                            <p>{{ hotel_info.check_in_time }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6><i class="fas fa-clock text-warning"></i> Check-out</h6>
+                            <p>{{ hotel_info.check_out_time }}</p>
+                        </div>
+                    </div>
+
+                    {% if hotel_info.social_media %}
+                    <div class="row">
+                        <div class="col-12">
+                            <h6><i class="fas fa-share-alt"></i> Follow Us</h6>
+                            <div class="d-flex gap-2">
+                                {% if hotel_info.social_media.facebook %}
+                                <a href="{{ hotel_info.social_media.facebook }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                    <i class="fab fa-facebook"></i> Facebook
+                                </a>
+                                {% endif %}
+                                {% if hotel_info.social_media.instagram %}
+                                <a href="https://instagram.com/{{ hotel_info.social_media.instagram.replace('@', '') }}" target="_blank" class="btn btn-outline-danger btn-sm">
+                                    <i class="fab fa-instagram"></i> Instagram
+                                </a>
+                                {% endif %}
+                                {% if hotel_info.social_media.twitter %}
+                                <a href="https://twitter.com/{{ hotel_info.social_media.twitter.replace('@', '') }}" target="_blank" class="btn btn-outline-info btn-sm">
+                                    <i class="fab fa-twitter"></i> Twitter
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('room.browse_rooms') }}" class="btn btn-primary">
+                            <i class="fas fa-bed"></i> View Available Rooms
+                        </a>
+                        <a href="{{ url_for('location.hotel_info') }}" class="btn btn-outline-info">
+                            <i class="fas fa-map"></i> View Location & Nearby Places
+                        </a>
+                        {% if session.user_id %}
+                        <a href="{{ url_for('booking.my_bookings') }}" class="btn btn-outline-success">
+                            <i class="fas fa-calendar-alt"></i> My Bookings
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-success">
+                            <i class="fas fa-user-plus"></i> Create Account
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-envelope"></i> Send us a Message</h5>
+                </div>
+                <div class="card-body">
+                    <form id="contactForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Subject *</label>
+                            <select class="form-select" id="subject" name="subject" required>
+                                <option value="">Select a topic...</option>
+                                <option value="general">General Inquiry</option>
+                                <option value="booking">Booking Question</option>
+                                <option value="reservation">Existing Reservation</option>
+                                <option value="feedback">Feedback</option>
+                                <option value="complaint">Complaint</option>
+                                <option value="accessibility">Accessibility</option>
+                                <option value="events">Events & Meetings</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message *</label>
+                            <textarea class="form-control" id="message" name="message" rows="5" 
+                                      placeholder="Please provide details about your inquiry..." required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="preferredContact" class="form-label">Preferred Contact Method</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="preferredContact" id="contactEmail" value="email" checked>
+                                <label class="form-check-label" for="contactEmail">Email</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="preferredContact" id="contactPhone" value="phone">
+                                <label class="form-check-label" for="contactPhone">Phone</label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Send Message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Response Time Info -->
+            <div class="card mt-4">
+                <div class="card-body text-center">
+                    <h6><i class="fas fa-clock"></i> Response Times</h6>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <strong class="text-success">Email</strong><br>
+                            <small class="text-muted">Within 4 hours</small>
+                        </div>
+                        <div class="col-6">
+                            <strong class="text-primary">Phone</strong><br>
+                            <small class="text-muted">Immediate</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Contact -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <h5><i class="fas fa-exclamation-triangle"></i> Emergency or Urgent Assistance</h5>
+                <p class="mb-2">For immediate assistance or emergencies, please call our 24/7 front desk directly:</p>
+                <h4><a href="tel:{{ hotel_info.contact.phone }}" class="text-decoration-none">{{ hotel_info.contact.phone }}</a></h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Get form data
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    
+    // Simulate form submission (in real app, this would send to backend)
+    setTimeout(() => {
+        // Show success message
+        alert('Thank you for your message! We will get back to you within 4 hours.');
+        
+        // Reset form
+        this.reset();
+        
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }, 1500);
+});
+</script>
+{% endblock %}
