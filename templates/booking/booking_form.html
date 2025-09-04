@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Book Room - {{ room.room_number }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-calendar-check"></i> Book Room {{ room.room_number }}</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Room Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <img src="{{ room.image_url or '/static/images/room-default.jpg' }}" 
+                                 class="img-fluid rounded" alt="Room {{ room.room_number }}">
+                        </div>
+                        <div class="col-md-8">
+                            <h5>{{ room.type.title() }} Room</h5>
+                            <p class="text-muted">Room {{ room.room_number }}</p>
+                            <p><strong>Price:</strong> ${{ "%.2f"|format(room.price) }} per night</p>
+                            <p><strong>Capacity:</strong> {{ room.capacity }} guests</p>
+                            <p><strong>Amenities:</strong> 
+                                {% for amenity in room.amenities %}
+                                    <span class="badge bg-light text-dark me-1">{{ amenity }}</span>
+                                {% endfor %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Booking Form -->
+                    <form id="bookingForm" method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="check_in" class="form-label">Check-in Date</label>
+                                    <input type="date" class="form-control" id="check_in" name="check_in" 
+                                           min="{{ min_date }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="check_out" class="form-label">Check-out Date</label>
+                                    <input type="date" class="form-control" id="check_out" name="check_out" 
+                                           min="{{ min_date }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="guests" class="form-label">Number of Guests</label>
+                                    <select class="form-select" id="guests" name="guests" required>
+                                        {% for i in range(1, room.capacity + 1) %}
+                                            <option value="{{ i }}">{{ i }} guest{{ 's' if i > 1 else '' }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="special_requests" class="form-label">Special Requests</label>
+                                    <textarea class="form-control" id="special_requests" name="special_requests" 
+                                              rows="3" placeholder="Any special requests or notes..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Availability Check Results -->
+                        <div id="availabilityResult" class="alert" style="display: none;"></div>
+
+                        <!-- Booking Summary -->
+                        <div id="bookingSummary" class="card mt-3" style="display: none;">
+                            <div class="card-header">
+                                <h6><i class="fas fa-calculator"></i> Booking Summary</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Nights:</strong> <span id="totalNights">0</span></p>
+                                        <p><strong>Rate per night:</strong> ${{ "%.2f"|format(room.price) }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Subtotal:</strong> $<span id="subtotal">0.00</span></p>
+                                        <p><strong>Tax (10%):</strong> $<span id="tax">0.00</span></p>
+                                        <h5><strong>Total Amount:</strong> $<span id="totalAmount">0.00</span></h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="button" class="btn btn-info" id="checkAvailability">
+                                <i class="fas fa-search"></i> Check Availability
+                            </button>
+                            <button type="submit" class="btn btn-success" id="confirmBooking" style="display: none;">
+                                <i class="fas fa-check"></i> Confirm Booking
+                            </button>
+                            <a href="{{ url_for('room.browse_rooms') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Rooms
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Guidelines -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-info-circle"></i> Booking Guidelines</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-clock text-info"></i> Check-in: 3:00 PM</li>
+                        <li><i class="fas fa-clock text-info"></i> Check-out: 11:00 AM</li>
+                        <li><i class="fas fa-calendar text-warning"></i> Minimum stay: 1 night</li>
+                        <li><i class="fas fa-ban text-danger"></i> Cancellation: 24 hours</li>
+                        <li><i class="fas fa-user-friends text-success"></i> Max capacity: {{ room.capacity }} guests</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6><i class="fas fa-star"></i> Room Features</h6>
+                </div>
+                <div class="card-body">
+                    {% if room.amenities %}
+                        <ul class="list-unstyled">
+                            {% for amenity in room.amenities %}
+                                <li><i class="fas fa-check text-success"></i> {{ amenity }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">No specific amenities listed</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkInInput = document.getElementById('check_in');
+    const checkOutInput = document.getElementById('check_out');
+    const checkAvailabilityBtn = document.getElementById('checkAvailability');
+    const confirmBookingBtn = document.getElementById('confirmBooking');
+    const availabilityResult = document.getElementById('availabilityResult');
+    const bookingSummary = document.getElementById('bookingSummary');
+    const roomPrice = {{ room.price }};
+
+    // Set minimum dates
+    const today = new Date().toISOString().split('T')[0];
+    checkInInput.min = today;
+    checkOutInput.min = today;
+
+    // Update checkout minimum when checkin changes
+    checkInInput.addEventListener('change', function() {
+        const checkInDate = new Date(this.value);
+        checkInDate.setDate(checkInDate.getDate() + 1);
+        checkOutInput.min = checkInDate.toISOString().split('T')[0];
+        
+        // Clear checkout if it's before new minimum
+        if (checkOutInput.value && new Date(checkOutInput.value) <= new Date(this.value)) {
+            checkOutInput.value = '';
+        }
+    });
+
+    // Check availability
+    checkAvailabilityBtn.addEventListener('click', function() {
+        const checkIn = checkInInput.value;
+        const checkOut = checkOutInput.value;
+
+        if (!checkIn || !checkOut) {
+            alert('Please select both check-in and check-out dates');
+            return;
+        }
+
+        if (new Date(checkOut) <= new Date(checkIn)) {
+            alert('Check-out date must be after check-in date');
+            return;
+        }
+
+        // Show loading state
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+
+        // AJAX request to check availability
+        fetch('/booking/check-availability', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                room_id: '{{ room._id }}',
+                check_in: checkIn,
+                check_out: checkOut
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.available) {
+                availabilityResult.className = 'alert alert-success';
+                availabilityResult.innerHTML = '<i class="fas fa-check"></i> Room is available for your selected dates!';
+                availabilityResult.style.display = 'block';
+                
+                // Calculate and show booking summary
+                const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+                const subtotal = nights * roomPrice;
+                const tax = subtotal * 0.1;
+                const total = subtotal + tax;
+
+                document.getElementById('totalNights').textContent = nights;
+                document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+                document.getElementById('tax').textContent = tax.toFixed(2);
+                document.getElementById('totalAmount').textContent = total.toFixed(2);
+
+                bookingSummary.style.display = 'block';
+                confirmBookingBtn.style.display = 'inline-block';
+            } else {
+                availabilityResult.className = 'alert alert-danger';
+                availabilityResult.innerHTML = '<i class="fas fa-times"></i> Sorry, this room is not available for your selected dates.';
+                availabilityResult.style.display = 'block';
+                bookingSummary.style.display = 'none';
+                confirmBookingBtn.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            availabilityResult.className = 'alert alert-danger';
+            availabilityResult.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error checking availability. Please try again.';
+            availabilityResult.style.display = 'block';
+        })
+        .finally(() => {
+            // Reset button state
+            this.disabled = false;
+            this.innerHTML = '<i class="fas fa-search"></i> Check Availability';
+        });
+    });
+
+    // Form submission
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        if (!confirmBookingBtn.style.display || confirmBookingBtn.style.display === 'none') {
+            e.preventDefault();
+            alert('Please check availability first before confirming your booking.');
+        }
+    });
+});
+</script>
+{% endblock %}

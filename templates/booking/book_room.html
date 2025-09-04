@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Book {{ room.name }} - Hotel Booking App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('room.browse_rooms') }}">Browse Rooms</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('room.room_details', room_id=room._id) }}">{{ room.name }}</a></li>
+                <li class="breadcrumb-item active">Book Room</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-calendar-check"></i> Book {{ room.name }}</h4>
+            </div>
+            <div class="card-body">
+                <!-- Room Summary -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        {% if room.image_url %}
+                            <img src="{{ room.image_url }}" class="img-fluid rounded" alt="{{ room.name }}" 
+                                 style="height: 200px; width: 100%; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center rounded" 
+                                 style="height: 200px;">
+                                <i class="fas fa-bed fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <h5>{{ room.name }}</h5>
+                        <p class="text-muted">{{ room.description }}</p>
+                        <p><strong>Price:</strong> <span class="text-success">${{ "%.2f"|format(room.price) }} per night</span></p>
+                        <p><strong>Capacity:</strong> {{ room.capacity }} {{ 'person' if room.capacity == 1 else 'people' }}</p>
+                        {% if room.amenities %}
+                        <p><strong>Amenities:</strong> 
+                            {% for amenity in room.amenities %}
+                                <span class="badge bg-light text-dark me-1">{{ amenity }}</span>
+                            {% endfor %}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Booking Form -->
+                <form method="POST" action="{{ url_for('booking.create_booking') }}" id="bookingForm">
+                    <input type="hidden" name="room_id" value="{{ room._id }}">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="check_in" class="form-label">
+                                    <i class="fas fa-calendar-alt text-primary"></i> Check-in Date
+                                </label>
+                                <input type="date" class="form-control" id="check_in" name="check_in" 
+                                       min="{{ (date.today()).strftime('%Y-%m-%d') }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="check_out" class="form-label">
+                                    <i class="fas fa-calendar-alt text-primary"></i> Check-out Date
+                                </label>
+                                <input type="date" class="form-control" id="check_out" name="check_out" 
+                                       min="{{ (date.today()).strftime('%Y-%m-%d') }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="guests" class="form-label">
+                                    <i class="fas fa-users text-primary"></i> Number of Guests
+                                </label>
+                                <select class="form-select" id="guests" name="guests" required>
+                                    {% for i in range(1, room.capacity + 1) %}
+                                    <option value="{{ i }}">{{ i }} {{ 'Guest' if i == 1 else 'Guests' }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="special_requests" class="form-label">
+                                    <i class="fas fa-comment text-primary"></i> Special Requests (Optional)
+                                </label>
+                                <textarea class="form-control" id="special_requests" name="special_requests" 
+                                          rows="3" placeholder="Any special requests or notes..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-credit-card"></i> Proceed to Book
+                        </button>
+                        <a href="{{ url_for('room.room_details', room_id=room._id) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Room Details
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Booking Summary -->
+        <div class="card sticky-top" style="top: 20px;">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Booking Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Room:</strong> {{ room.name }}<br>
+                    <strong>Rate:</strong> ${{ "%.2f"|format(room.price) }} per night
+                </div>
+                
+                <div id="booking-summary" class="d-none">
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span>Nights:</span>
+                        <span id="nights-count">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Room Rate:</span>
+                        <span id="room-rate">${{ "%.2f"|format(room.price) }}</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between h5">
+                        <strong>Total:</strong>
+                        <strong id="total-price">$0.00</strong>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i> 
+                        Price will be calculated after selecting dates
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Policies -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Booking Policies</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Free cancellation up to 24 hours
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        No booking fees
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Instant confirmation
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-check text-success me-2"></i>
+                        24/7 customer support
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkInInput = document.getElementById('check_in');
+    const checkOutInput = document.getElementById('check_out');
+    const bookingSummary = document.getElementById('booking-summary');
+    const nightsCount = document.getElementById('nights-count');
+    const totalPrice = document.getElementById('total-price');
+    const roomRate = {{ room.price }};
+
+    function calculateTotal() {
+        const checkIn = new Date(checkInInput.value);
+        const checkOut = new Date(checkOutInput.value);
+        
+        if (checkIn && checkOut && checkOut > checkIn) {
+            const timeDiff = checkOut.getTime() - checkIn.getTime();
+            const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            const total = nights * roomRate;
+            
+            nightsCount.textContent = nights;
+            totalPrice.textContent = '$' + total.toFixed(2);
+            bookingSummary.classList.remove('d-none');
+        } else {
+            bookingSummary.classList.add('d-none');
+        }
+    }
+
+    checkInInput.addEventListener('change', function() {
+        // Set minimum checkout date to day after checkin
+        const minCheckOut = new Date(this.value);
+        minCheckOut.setDate(minCheckOut.getDate() + 1);
+        checkOutInput.min = minCheckOut.toISOString().split('T')[0];
+        calculateTotal();
+    });
+
+    checkOutInput.addEventListener('change', calculateTotal);
+});
+</script>
+{% endblock %}

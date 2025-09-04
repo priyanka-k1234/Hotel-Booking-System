@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Booking Details - #{{ booking.booking_number }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-receipt"></i> Booking #{{ booking.booking_number }}</h2>
+                <a href="{{ url_for('booking.my_bookings') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to My Bookings
+                </a>
+            </div>
+
+            <div class="row">
+                <!-- Booking Information -->
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-info-circle"></i> Booking Information</h5>
+                            {% if booking.status == 'confirmed' %}
+                                <span class="badge bg-warning fs-6">{{ booking.status.title() }}</span>
+                            {% elif booking.status == 'completed' %}
+                                <span class="badge bg-success fs-6">{{ booking.status.title() }}</span>
+                            {% elif booking.status == 'cancelled' %}
+                                <span class="badge bg-danger fs-6">{{ booking.status.title() }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6">{{ booking.status.title() }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-calendar-check"></i> Check-in</h6>
+                                    <p class="text-primary fs-5">{{ booking.check_in.strftime('%A, %B %d, %Y') }}</p>
+                                    <small class="text-muted">Standard check-in time: 3:00 PM</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-calendar-times"></i> Check-out</h6>
+                                    <p class="text-primary fs-5">{{ booking.check_out.strftime('%A, %B %d, %Y') }}</p>
+                                    <small class="text-muted">Standard check-out time: 11:00 AM</small>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-bed"></i> Stay Duration</h6>
+                                    <p>{{ booking.nights }} night{{ 's' if booking.nights > 1 else '' }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-user-friends"></i> Guests</h6>
+                                    <p>{{ booking.guests }} guest{{ 's' if booking.guests > 1 else '' }}</p>
+                                </div>
+                            </div>
+
+                            {% if booking.special_requests %}
+                            <hr>
+                            <h6><i class="fas fa-clipboard-list"></i> Special Requests</h6>
+                            <p class="text-muted">{{ booking.special_requests }}</p>
+                            {% endif %}
+
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-calendar-plus"></i> Booking Date</h6>
+                                    <p>{{ booking.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                                </div>
+                                {% if booking.updated_at != booking.created_at %}
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-edit"></i> Last Updated</h6>
+                                    <p>{{ booking.updated_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Room Details -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-door-open"></i> Room Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <img src="{{ booking.room.image_url or '/static/images/room-default.jpg' }}" 
+                                         class="img-fluid rounded" alt="{{ booking.room.name }}">
+                                </div>
+                                <div class="col-md-8">
+                                    <h4>{{ booking.room.name }}</h4>
+                                    <p class="text-muted fs-5">{{ booking.room.description }}</p>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Capacity:</strong> {{ booking.room.capacity }} guests</p>
+                                            <p><strong>Rate per night:</strong> ${{ "%.2f"|format(booking.room.price) }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            {% if booking.room.amenities %}
+                                            <p><strong>Amenities:</strong></p>
+                                            <div class="amenities">
+                                                {% for amenity in booking.room.amenities %}
+                                                    <span class="badge bg-light text-dark me-1 mb-1">{{ amenity }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    {% if booking.status == 'confirmed' %}
+                    <div class="card mt-4">
+                        <div class="card-body text-center">
+                            <h6>Need to make changes to your booking?</h6>
+                            <div class="btn-group mt-2" role="group">
+                                <button type="button" class="btn btn-warning" onclick="modifyBooking('{{ booking._id }}')">
+                                    <i class="fas fa-edit"></i> Modify Booking
+                                </button>
+                                <button type="button" class="btn btn-danger" onclick="cancelBooking('{{ booking._id }}', '{{ booking.booking_number }}')">
+                                    <i class="fas fa-times"></i> Cancel Booking
+                                </button>
+                            </div>
+                            <p class="text-muted mt-2 mb-0">
+                                <small>Cancellations must be made at least 24 hours before check-in</small>
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Billing Summary -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-receipt"></i> Billing Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Room rate ({{ booking.nights }} night{{ 's' if booking.nights > 1 else '' }})</span>
+                                <span>${{ "%.2f"|format(booking.room.price * booking.nights) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Taxes & fees</span>
+                                <span>${{ "%.2f"|format(booking.total_price - (booking.room.price * booking.nights)) }}</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <strong>Total Amount</strong>
+                                <strong class="text-primary">${{ "%.2f"|format(booking.total_price) }}</strong>
+                            </div>
+                            
+                            {% if booking.status == 'confirmed' %}
+                                <div class="alert alert-info mt-3">
+                                    <small><i class="fas fa-info-circle"></i> Payment will be collected upon check-in</small>
+                                </div>
+                            {% elif booking.status == 'completed' %}
+                                <div class="alert alert-success mt-3">
+                                    <small><i class="fas fa-check-circle"></i> Payment completed</small>
+                                </div>
+                            {% elif booking.status == 'cancelled' %}
+                                <div class="alert alert-danger mt-3">
+                                    <small><i class="fas fa-times-circle"></i> Booking cancelled</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-phone"></i> Need Help?</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2"><strong>Hotel Front Desk</strong></p>
+                            <p class="mb-1"><i class="fas fa-phone"></i> (555) 123-4567</p>
+                            <p class="mb-3"><i class="fas fa-envelope"></i> info@hotel.com</p>
+                            
+                            <p class="mb-2"><strong>Customer Service</strong></p>
+                            <p class="mb-1">Available 24/7</p>
+                            <p class="mb-0"><i class="fas fa-phone"></i> (555) 987-6543</p>
+                        </div>
+                    </div>
+
+                    <!-- QR Code for Mobile Check-in -->
+                    {% if booking.status == 'confirmed' %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-qrcode"></i> Mobile Check-in</h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="qr-code mb-3">
+                                <!-- QR code would be generated here -->
+                                <div class="bg-light p-4 rounded">
+                                    <i class="fas fa-qrcode fa-4x text-muted"></i>
+                                </div>
+                            </div>
+                            <p class="text-muted small">Scan this QR code at the hotel for express check-in</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function cancelBooking(bookingId, bookingNumber) {
+    if (confirm(`Are you sure you want to cancel booking #${bookingNumber}?`)) {
+        fetch(`/booking/cancel/${bookingId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Booking cancelled successfully');
+                location.reload();
+            } else {
+                alert('Error cancelling booking: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error cancelling booking. Please try again.');
+        });
+    }
+}
+
+function modifyBooking(bookingId) {
+    // For now, show alert - this would be implemented later
+    alert('Booking modification feature will be available soon. Please contact customer service for changes.');
+}
+</script>
+{% endblock %}

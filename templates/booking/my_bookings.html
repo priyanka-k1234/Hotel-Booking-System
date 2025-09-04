@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-calendar-alt"></i> My Bookings</h2>
+                <a href="{{ url_for('room.browse_rooms') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Book New Room
+                </a>
+            </div>
+
+            {% if bookings %}
+                <!-- Booking Status Summary -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-info">{{ stats.total }}</h5>
+                                <p class="card-text">Total Bookings</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-warning">{{ stats.confirmed }}</h5>
+                                <p class="card-text">Confirmed</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-success">{{ stats.completed }}</h5>
+                                <p class="card-text">Completed</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-danger">{{ stats.cancelled }}</h5>
+                                <p class="card-text">Cancelled</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Options -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form method="GET" class="row g-3">
+                            <div class="col-md-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="">All Statuses</option>
+                                    <option value="confirmed" {{ 'selected' if request.args.get('status') == 'confirmed' }}>Confirmed</option>
+                                    <option value="completed" {{ 'selected' if request.args.get('status') == 'completed' }}>Completed</option>
+                                    <option value="cancelled" {{ 'selected' if request.args.get('status') == 'cancelled' }}>Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="date_from" class="form-label">From Date</label>
+                                <input type="date" class="form-control" id="date_from" name="date_from" 
+                                       value="{{ request.args.get('date_from', '') }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="date_to" class="form-label">To Date</label>
+                                <input type="date" class="form-control" id="date_to" name="date_to" 
+                                       value="{{ request.args.get('date_to', '') }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-outline-primary">
+                                        <i class="fas fa-filter"></i> Filter
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Bookings List -->
+                <div class="row">
+                    {% for booking in bookings %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Booking #{{ booking.booking_number }}</h6>
+                                {% if booking.status == 'confirmed' %}
+                                    <span class="badge bg-warning">{{ booking.status.title() }}</span>
+                                {% elif booking.status == 'completed' %}
+                                    <span class="badge bg-success">{{ booking.status.title() }}</span>
+                                {% elif booking.status == 'cancelled' %}
+                                    <span class="badge bg-danger">{{ booking.status.title() }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ booking.status.title() }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-door-open"></i> {{ booking.room.name }}</h6>
+                                        <p class="text-muted mb-1">{{ booking.room.description[:30] }}{% if booking.room.description|length > 30 %}...{% endif %}</p>
+                                        <p class="mb-2"><small class="text-muted">Capacity: {{ booking.room.capacity }} guests</small></p>
+                                    </div>
+                                    <div class="col-md-6 text-end">
+                                        <h5 class="text-primary">${{ "%.2f"|format(booking.total_price) }}</h5>
+                                        <p class="mb-0"><small class="text-muted">{{ booking.nights }} night{{ 's' if booking.nights > 1 else '' }}</small></p>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Check-in:</strong><br>
+                                        <i class="fas fa-calendar"></i> {{ booking.check_in.strftime('%B %d, %Y') }}
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Check-out:</strong><br>
+                                        <i class="fas fa-calendar"></i> {{ booking.check_out.strftime('%B %d, %Y') }}
+                                    </div>
+                                </div>
+
+                                {% if booking.guests > 1 %}
+                                <p class="mt-2 mb-1"><strong>Guests:</strong> {{ booking.guests }}</p>
+                                {% endif %}
+
+                                {% if booking.special_requests %}
+                                <p class="mb-1"><strong>Special Requests:</strong></p>
+                                <p class="text-muted small">{{ booking.special_requests }}</p>
+                                {% endif %}
+
+                                <p class="mb-0"><small class="text-muted">
+                                    Booked on {{ booking.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                </small></p>
+                            </div>
+                            <div class="card-footer">
+                                <div class="btn-group w-100" role="group">
+                                    <a href="{{ url_for('booking.booking_details', booking_id=booking._id) }}" 
+                                       class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </a>
+                                    {% if booking.status == 'confirmed' %}
+                                        <button class="btn btn-outline-danger btn-sm" 
+                                                onclick="cancelBooking('{{ booking._id }}', '{{ booking.booking_number }}')">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                    {% endif %}
+                                    {% if booking.status == 'completed' %}
+                                        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" 
+                                                data-bs-target="#reviewModal" data-booking-id="{{ booking._id }}"
+                                                data-room-name="{{ booking.room.name }}">
+                                            <i class="fas fa-star"></i> Review
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if bookings|length == 10 %}
+                <nav aria-label="Bookings pagination">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item">
+                            <a class="page-link" href="#" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+
+            {% else %}
+                <!-- No Bookings State -->
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Bookings Yet</h4>
+                    <p class="text-muted">You haven't made any bookings yet. Start exploring our rooms!</p>
+                    <a href="{{ url_for('room.browse_rooms') }}" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Browse Rooms
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reviewModalLabel">Leave a Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="reviewForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">Rating</label>
+                        <div class="rating">
+                            <input type="radio" name="rating" value="5" id="star5">
+                            <label for="star5">★</label>
+                            <input type="radio" name="rating" value="4" id="star4">
+                            <label for="star4">★</label>
+                            <input type="radio" name="rating" value="3" id="star3">
+                            <label for="star3">★</label>
+                            <input type="radio" name="rating" value="2" id="star2">
+                            <label for="star2">★</label>
+                            <input type="radio" name="rating" value="1" id="star1">
+                            <label for="star1">★</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="review_text" class="form-label">Your Review</label>
+                        <textarea class="form-control" id="review_text" name="review_text" rows="4" 
+                                  placeholder="Share your experience..."></textarea>
+                    </div>
+                    <input type="hidden" id="booking_id" name="booking_id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.rating {
+    direction: rtl;
+    font-size: 2rem;
+}
+
+.rating input[type="radio"] {
+    display: none;
+}
+
+.rating label {
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.rating label:hover,
+.rating label:hover ~ label,
+.rating input[type="radio"]:checked ~ label {
+    color: #ffc107;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Review modal handling
+    const reviewModal = document.getElementById('reviewModal');
+    if (reviewModal) {
+        reviewModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const bookingId = button.getAttribute('data-booking-id');
+            const roomNumber = button.getAttribute('data-room-number');
+            
+            const modalTitle = reviewModal.querySelector('.modal-title');
+            const bookingIdInput = reviewModal.querySelector('#booking_id');
+            
+            modalTitle.textContent = `Leave a Review - Room ${roomNumber}`;
+            bookingIdInput.value = bookingId;
+        });
+    }
+
+    // Review form submission
+    const reviewForm = document.getElementById('reviewForm');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            fetch('/booking/review', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Thank you for your review!');
+                    reviewModal.querySelector('.btn-close').click();
+                    location.reload();
+                } else {
+                    alert('Error submitting review: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error submitting review. Please try again.');
+            });
+        });
+    }
+});
+
+function cancelBooking(bookingId, bookingNumber) {
+    if (confirm(`Are you sure you want to cancel booking #${bookingNumber}?`)) {
+        fetch(`/booking/cancel/${bookingId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Booking cancelled successfully');
+                location.reload();
+            } else {
+                alert('Error cancelling booking: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error cancelling booking. Please try again.');
+        });
+    }
+}
+</script>
+{% endblock %}
