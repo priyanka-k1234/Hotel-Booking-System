@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Rooms - Hotel Booking App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1>Available Rooms</h1>
+        <p class="lead">Discover our comfortable and luxurious accommodations</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-filter"></i> Filter Rooms
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('room.browse_rooms') }}">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="min_price" class="form-label">Min Price ($)</label>
+                        <input type="number" class="form-control" id="min_price" name="min_price" 
+                               step="0.01" min="0" value="{{ filters.min_price or '' }}">
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="max_price" class="form-label">Max Price ($)</label>
+                        <input type="number" class="form-control" id="max_price" name="max_price" 
+                               step="0.01" min="0" value="{{ filters.max_price or '' }}">
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="min_capacity" class="form-label">Min Capacity</label>
+                        <input type="number" class="form-control" id="min_capacity" name="min_capacity" 
+                               min="1" value="{{ filters.min_capacity or '' }}">
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="amenities" class="form-label">Amenities</label>
+                        <select class="form-select" id="amenities" name="amenities" multiple>
+                            {% for amenity in all_amenities %}
+                                <option value="{{ amenity }}" 
+                                        {{ 'selected' if amenity in filters.amenities else '' }}>
+                                    {{ amenity }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Apply Filters
+                </button>
+                <a href="{{ url_for('room.browse_rooms') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Clear Filters
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Rooms Grid -->
+{% if rooms %}
+    <div class="row">
+        {% for room in rooms %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                {% if room.image_url %}
+                    <img src="{{ room.image_url }}" class="card-img-top" alt="{{ room.name }}" 
+                         style="height: 200px; object-fit: cover;">
+                {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                         style="height: 200px;">
+                        <i class="fas fa-bed fa-3x text-muted"></i>
+                    </div>
+                {% endif %}
+                
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title">{{ room.name }}</h5>
+                        <span class="badge bg-primary fs-6">${{ "%.2f"|format(room.price) }}/night</span>
+                    </div>
+                    
+                    <p class="card-text flex-grow-1">{{ room.description }}</p>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-users text-muted me-2"></i>
+                            <span>Capacity: {{ room.capacity }} {{ 'person' if room.capacity == 1 else 'people' }}</span>
+                        </div>
+                        
+                        {% if room.amenities %}
+                        <div class="mb-2">
+                            <small class="text-muted">Amenities:</small><br>
+                            {% for amenity in room.amenities[:4] %}
+                                <span class="badge bg-secondary me-1">{{ amenity }}</span>
+                            {% endfor %}
+                            {% if room.amenities|length > 4 %}
+                                <span class="badge bg-light text-dark">+{{ room.amenities|length - 4 }} more</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-auto">
+                        <a href="{{ url_for('room.room_details', room_id=room._id) }}" 
+                           class="btn btn-primary w-100">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+        <h4>No Rooms Found</h4>
+        <p class="text-muted">Try adjusting your search filters or check back later for new availability.</p>
+        <a href="{{ url_for('room.browse_rooms') }}" class="btn btn-primary">
+            <i class="fas fa-refresh"></i> Clear Filters
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

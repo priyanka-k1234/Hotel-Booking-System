@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}{{ room.name }} - Hotel Booking App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('room.browse_rooms') }}">Browse Rooms</a></li>
+                <li class="breadcrumb-item active">{{ room.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Room Image -->
+        <div class="card mb-4">
+            {% if room.image_url %}
+                <img src="{{ room.image_url }}" class="card-img-top" alt="{{ room.name }}" 
+                     style="height: 400px; object-fit: cover;">
+            {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                     style="height: 400px;">
+                    <i class="fas fa-bed fa-5x text-muted"></i>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Room Details -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Room Details</h5>
+            </div>
+            <div class="card-body">
+                <h3>{{ room.name }}</h3>
+                <p class="lead">{{ room.description }}</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-users text-primary"></i> Capacity</h6>
+                        <p>{{ room.capacity }} {{ 'person' if room.capacity == 1 else 'people' }}</p>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-dollar-sign text-primary"></i> Price</h6>
+                        <p class="h4 text-success">${{ "%.2f"|format(room.price) }} <small class="text-muted">per night</small></p>
+                    </div>
+                </div>
+                
+                {% if room.amenities %}
+                <div class="mt-4">
+                    <h6><i class="fas fa-star text-primary"></i> Amenities</h6>
+                    <div class="row">
+                        {% for amenity in room.amenities %}
+                        <div class="col-md-6 mb-2">
+                            <i class="fas fa-check text-success me-2"></i>{{ amenity }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Booking Card -->
+        <div class="card sticky-top" style="top: 20px;">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Book This Room</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <h3 class="text-primary">${{ "%.2f"|format(room.price) }}</h3>
+                    <small class="text-muted">per night</small>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                        <div>
+                            <i class="fas fa-users text-primary"></i>
+                            <span class="ms-2">Capacity</span>
+                        </div>
+                        <span class="badge bg-primary">{{ room.capacity }}</span>
+                    </div>
+                </div>
+                
+                {% if session.user_id %}
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('booking.book_room', room_id=room._id) }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-calendar-plus"></i> Book Now
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt"></i> Login to Book
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-plus"></i> Create Account
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Room Features -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Room Features</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 text-center mb-3">
+                        <i class="fas fa-wifi fa-2x text-primary mb-2"></i>
+                        <div><small>Free WiFi</small></div>
+                    </div>
+                    <div class="col-6 text-center mb-3">
+                        <i class="fas fa-snowflake fa-2x text-primary mb-2"></i>
+                        <div><small>Climate Control</small></div>
+                    </div>
+                    <div class="col-6 text-center mb-3">
+                        <i class="fas fa-tv fa-2x text-primary mb-2"></i>
+                        <div><small>Flat Screen TV</small></div>
+                    </div>
+                    <div class="col-6 text-center mb-3">
+                        <i class="fas fa-concierge-bell fa-2x text-primary mb-2"></i>
+                        <div><small>Room Service</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contact Info -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Need Help?</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">
+                    <i class="fas fa-phone text-primary me-2"></i>
+                    <strong>Phone:</strong> +1 (555) 123-4567
+                </p>
+                <p class="mb-2">
+                    <i class="fas fa-envelope text-primary me-2"></i>
+                    <strong>Email:</strong> info@hotel.com
+                </p>
+                <p class="mb-0">
+                    <i class="fas fa-clock text-primary me-2"></i>
+                    <strong>Hours:</strong> 24/7 Support
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Similar Rooms -->
+<div class="mt-5">
+    <h4>You Might Also Like</h4>
+    <p class="text-muted">Explore other available rooms</p>
+    
+    <div class="text-center py-4">
+        <a href="{{ url_for('room.browse_rooms') }}" class="btn btn-outline-primary">
+            <i class="fas fa-search"></i> Browse All Rooms
+        </a>
+    </div>
+</div>
+{% endblock %}
