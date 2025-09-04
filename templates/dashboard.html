@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Hotel Booking App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1>Welcome, {{ user.name }}!</h1>
+        <p class="lead">Manage your bookings and profile from your dashboard.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Profile Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Name:</strong> {{ user.name }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Role:</strong> {{ user.role.title() }}</p>
+                <p><strong>Member Since:</strong> {{ user.created_at.strftime('%B %Y') }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-search fa-3x text-primary mb-3"></i>
+                                <h6>Browse Rooms</h6>
+                                <p class="small">Explore available rooms and amenities</p>
+                                <a href="{{ url_for('room.browse_rooms') }}" class="btn btn-primary">View Rooms</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calendar-alt fa-3x text-success mb-3"></i>
+                                <h6>My Bookings</h6>
+                                <p class="small">Manage your reservations</p>
+                                <a href="{{ url_for('booking.my_bookings') }}" class="btn btn-success">View Bookings</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Recent Bookings</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_bookings %}
+                    <div class="row">
+                        {% for booking in recent_bookings %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card border">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ booking.room.name }}</h6>
+                                        <p class="card-text small">
+                                            <strong>Check-in:</strong> {{ booking.check_in.strftime('%B %d, %Y') }}<br>
+                                            <strong>Check-out:</strong> {{ booking.check_out.strftime('%B %d, %Y') }}<br>
+                                            <strong>Total:</strong> ${{ "%.2f"|format(booking.total_price) }}<br>
+                                            <span class="badge bg-{{ 'warning' if booking.status == 'pending' else 'success' if booking.status == 'confirmed' else 'danger' }}">
+                                                {{ booking.status.title() }}
+                                            </span>
+                                        </p>
+                                        <a href="{{ url_for('booking.booking_details', booking_id=booking._id) }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('booking.my_bookings') }}" class="btn btn-primary">View All Bookings</a>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-calendar-times fa-2x mb-3"></i>
+                        <p>No bookings found.</p>
+                        <p class="small">Ready to make your first reservation?</p>
+                        <a href="{{ url_for('room.browse_rooms') }}" class="btn btn-primary">Browse Rooms</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

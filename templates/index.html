@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Hotel Booking App{% endblock %}
+
+{% block content %}
+<div class="hero-section bg-primary text-white py-5 mb-5 rounded">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">Welcome to Hotel Booking</h1>
+        <p class="lead mb-4">Experience luxury and comfort at the finest hotels</p>
+        {% if not session.user_id %}
+            <div class="hero-buttons">
+                <a href="{{ url_for('room.browse_rooms') }}" class="btn btn-light btn-lg me-3">Browse Rooms</a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light btn-lg">Get Started</a>
+            </div>
+        {% else %}
+            <div class="hero-buttons">
+                <a href="{{ url_for('room.browse_rooms') }}" class="btn btn-light btn-lg me-3">Browse Rooms</a>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light btn-lg">Go to Dashboard</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <h2>About Our Hotel</h2>
+        <p class="lead">Experience unparalleled luxury and comfort in our world-class accommodations.</p>
+        
+        <div class="row mt-4">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-bed fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Luxury Rooms</h5>
+                        <p class="card-text">Comfortable and elegant rooms with modern amenities.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-wifi fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Free WiFi</h5>
+                        <p class="card-text">High-speed internet access throughout the property.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-concierge-bell fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">24/7 Service</h5>
+                        <p class="card-text">Round-the-clock service to ensure your comfort.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                {% if session.user_id %}
+                    <p>Welcome back, <strong>{{ session.user_name }}</strong>!</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">View Dashboard</a>
+                        {% if session.user_role == 'admin' %}
+                            <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-success">Admin Panel</a>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p>Join us today and start booking your perfect stay!</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Create Account</a>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">Login</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
